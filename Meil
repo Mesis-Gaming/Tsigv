@@ -1,5 +1,4 @@
 lua
--- Services
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
@@ -9,7 +8,6 @@ local Vehicle = Workspace:FindFirstChild("ATV") -- Change "ATV" to the correct v
 local flying = false
 local speed = 50
 
--- UI Creation for Mobile Controls
 local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
 local StartStopButton = Instance.new("TextButton", ScreenGui)
 local SpeedUpButton = Instance.new("TextButton", ScreenGui)
@@ -30,25 +28,21 @@ SpeedDownButton.Position = UDim2.new(0, 10, 0.6, 0)
 SpeedDownButton.Text = "Speed Down"
 SpeedDownButton.BackgroundColor3 = Color3.fromRGB(255, 128, 0)
 
--- Function to Toggle Flying
 local function toggleFlying()
 flying = not flying
 StartStopButton.Text = flying and "Stop" or "Start"
 StartStopButton.BackgroundColor3 = flying and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(0, 255, 0)
 end
 
--- Function to Adjust Speed
 local function adjustSpeed(amount)
 speed = math.clamp(speed + amount, 0, 200)
 print("Speed: " .. speed)
 end
 
--- Mobile Controls
 StartStopButton.MouseButton1Click:Connect(toggleFlying)
 SpeedUpButton.MouseButton1Click:Connect(function() adjustSpeed(10) end)
 SpeedDownButton.MouseButton1Click:Connect(function() adjustSpeed(-10) end)
 
--- PC Controls
 UserInputService.InputBegan:Connect(function(input)
 if input.KeyCode == Enum.KeyCode.X then
 toggleFlying()
