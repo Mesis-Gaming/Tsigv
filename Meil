@@ -12,7 +12,7 @@ if (not _G.Flags) then
             Sleepers = true;
         };
         HitboxExpander = {
-            Size = 16;
+            Size = 10;
             Enabled = true;
             Transparency = .7;
             Part = "Head"; 
