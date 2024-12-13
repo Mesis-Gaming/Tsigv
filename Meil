@@ -12,13 +12,13 @@ if (not _G.Flags) then
 			Sleepers = true;
 		};
 		HitboxExpander = {
-			Size = 25;
+			Size = 12;
 			Enabled = true;
 			Transparency = .7;
 			Part = "Head"; 
 			HeadOverride = {
 				Enabled = true;
-				Size = 25;
+				Size = 12;
 				Transparency = 7;
 			};
 		};
