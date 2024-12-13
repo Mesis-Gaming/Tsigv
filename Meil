@@ -12,10 +12,15 @@ if (not _G.Flags) then
 			Sleepers = true;
 		};
 		HitboxExpander = {
-			Size = 15;
+			Size = 25;
 			Enabled = true;
 			Transparency = .7;
 			Part = "Head"; 
+			HeadOverride = {
+				Enabled = true;
+				Size = 25;
+				Transparency = 7;
+			};
 		};
 	};
 end
@@ -142,18 +147,23 @@ if (not _G.Loaded) then
 		return Model.ClassName == "Model" and Model:FindFirstChild("Head") and Model.PrimaryPart ~= nil;
 	end
 
-	function SetColor(Billboard,Color) 
+	function SetColor(Billboard, Color) 
 		Billboard.PlayerName.TextColor3 = Color;
 		Billboard.PlayerDistance.TextColor3 = Color;
 		Billboard.PlayerWeapon.TextColor3 = Color;
 		Billboard.Box.UIStroke.Color = Color;
 	end
 
-	function HitboxExpander(Model,Size,Hitbox)
+	function HitboxExpander(Model, Size, Hitbox)
 		if (Hitbox.Enabled) then
 			local Part = Model[Hitbox.Part];
-			Part.Size = Vector3.new(Size,Size,Size);
-			Part.Transparency = Hitbox.Transparency;
+			if Hitbox.HeadOverride.Enabled and Hitbox.Part == "Head" then
+				Part.Size = Vector3.new(Hitbox.HeadOverride.Size, Hitbox.HeadOverride.Size, Hitbox.HeadOverride.Size);
+				Part.Transparency = Hitbox.HeadOverride.Transparency;
+			else
+				Part.Size = Vector3.new(Size, Size, Size);
+				Part.Transparency = Hitbox.Transparency;
+			end
 			Part.CanCollide = false;
 		else
 			local Part = Model[Hitbox.Part];
