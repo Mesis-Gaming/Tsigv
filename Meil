@@ -4,15 +4,15 @@ if (not _G.Flags) then
 			NotVisibleColor = Color3.fromRGB(255,0,0);
 			VisibleColor = Color3.fromRGB(0,255,0);	
 			DistanceLimit = 1500;
-			Box = true;
+			Box = false;
 			Name = true;
 			Weapon = true;
 			Distance = true;
 			VisibleCheck = true;
-			Sleepers = true;
+			Sleepers = false;
 		};
 		HitboxExpander = {
-			Size = 13;
+			Size = 11;
 			Enabled = true;
 			Transparency = .7;
 			Part = "Head"; 
