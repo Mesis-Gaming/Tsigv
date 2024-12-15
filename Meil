@@ -12,10 +12,10 @@ if (not _G.Flags) then
 			Sleepers = false;
 		};
 		HitboxExpander = {
-			Size = 12;
+			Size = 20;
 			Enabled = true;
 			Transparency = .7;
-			Part = "Head"; 
+			Part = "Head";
 		};
 	};
 end
@@ -152,7 +152,7 @@ if (not _G.Loaded) then
 	function HitboxExpander(Model,Size,Hitbox)
 		if (Hitbox.Enabled) then
 			local Part = Model[Hitbox.Part];
-			Part.Size = Vector3.new(Size,Size,Size);
+			Part.Size = Vector3.new(20,20,20);
 			Part.Transparency = Hitbox.Transparency;
 			Part.CanCollide = false;
 		else
