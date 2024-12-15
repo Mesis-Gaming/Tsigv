@@ -12,7 +12,7 @@ if (not _G.Flags) then
 			Sleepers = false;
 		};
 		HitboxExpander = {
-			Size = 20;
+			Size = 12;
 			Enabled = true;
 			Transparency = .7;
 			Part = "Head"; 
@@ -149,21 +149,17 @@ if (not _G.Loaded) then
 		Billboard.Box.UIStroke.Color = Color;
 	end
 
-	function HitboxExpander(Model, Hitbox)
-		if Hitbox.Enabled then
-			local HeadPart = Model:FindFirstChild("Head")
-			if HeadPart then
-				HeadPart.Size = Vector3.new(Hitbox.Size, Hitbox.Size, Hitbox.Size)
-				HeadPart.Transparency = Hitbox.Transparency
-				HeadPart.CanCollide = false
-			end
+	function HitboxExpander(Model,Size,Hitbox)
+		if (Hitbox.Enabled) then
+			local Part = Model[Hitbox.Part];
+			Part.Size = Vector3.new(Size,Size,Size);
+			Part.Transparency = Hitbox.Transparency;
+			Part.CanCollide = false;
 		else
-			local HeadPart = Model:FindFirstChild("Head")
-			if HeadPart then
-				HeadPart.Size = OriginalSizes["Head"] or HeadPart.Size
-				HeadPart.Transparency = 0
-				HeadPart.CanCollide = true
-			end
+			local Part = Model[Hitbox.Part];
+			Part.Size = OriginalSizes[Hitbox.Part];
+			Part.Transparency = 0;
+			Part.CanCollide = true;
 		end
 	end
 
@@ -191,7 +187,7 @@ if (not _G.Loaded) then
 					local PrimaryPosition = v.PrimaryPart.Position;
 					local Origin = CurrentCamera.CFrame.Position;
 					local Distance = (Origin - PrimaryPosition).Magnitude;
-					HitboxExpander(v, Hitbox);
+					HitboxExpander(v, Hitbox.Size, Hitbox);
 					local Sleeping = IsSleeping(v);
 					
 					if ((Distance > ESP.DistanceLimit) or (not ESP.Sleepers and Sleeping)) then
@@ -217,7 +213,7 @@ if (not _G.Loaded) then
 					local Params = RaycastParams.new();
 					Params.FilterDescendantsInstances = {IgnoreFolder, v};
 					local Direction = PrimaryPosition - Origin;
-
+					
 					local Raycast = workspace:Raycast(Origin, Direction, Params);
 					SetColor(Billboard, if (not Raycast or not ESP.VisibleCheck) then ESP.VisibleColor else ESP.NotVisibleColor);
 				end	
