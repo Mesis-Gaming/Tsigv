@@ -1,88 +1,55 @@
-if (not _G.Loaded) then
+if not _G.Flags then
+    _G.Flags = {
+        HitboxExpander = {
+            Size = 12;
+            Enabled = true;
+            Transparency = 0.7;
+            Part = "Torso";
+        };
+    };
+end
+
+if not _G.Loaded then
     _G.Loaded = true;
     local ReplicatedStorage = game:GetService("ReplicatedStorage");
     local RunService = game:GetService("RunService");
     local Players = game:GetService("Players");
-    local IgnoreFolder = workspace:WaitForChild("Ignore");
     local OriginalSizes = {};
-    local WeaponInfo = {};
-    local SleepAnimationId = "rbxassetid://13280887764"
-
-    for i,v in pairs(ReplicatedStorage.Shared.entities.Player.Model:GetChildren()) do
-        if v:IsA("BasePart") then
-            OriginalSizes[v.Name] = v.Size;
-        end
-    end
-
-    for i,v in pairs(ReplicatedStorage.HandModels:GetChildren()) do
-        v:SetAttribute("RealName", v.Name);
-    end
-
-    function IsSleeping(Player)
-        local Animations = Player.AnimationController:GetPlayingAnimationTracks();
-        for i,v in pairs(Animations) do
-            if (v.IsPlaying and v.Animation.AnimationId == SleepAnimationId) then
-                return true;
-            end
-        end
-        return false;
-    end
-
-    function PlayerWeapon(Player)
-        local Model = Player:FindFirstChildOfClass("Model");
-        return Model and Model:GetAttribute("RealName") or "None";
-    end
-
-    function IsPlayer(Model)
-        return Model.ClassName == "Model" and Model:FindFirstChild("Head") and Model.PrimaryPart ~= nil;
-    end
-
-    function HitboxExpander(Model, Size, Hitbox)
-        if (Hitbox.Enabled) then
-            local Part = Model[Hitbox.Part];
-            Part.Size = Vector3.new(12, 12, 12);
-            Part.Transparency = Hitbox.Transparency;
-            Part.CanCollide = false;
-        else
-            local Part = Model[Hitbox.Part];
-            Part.Size = OriginalSizes[Hitbox.Part];
-            Part.Transparency = 0;
-            Part.CanCollide = true;
-        end
-    end
-
-    function HitboxOverrider(player)
-        local torso = player:FindFirstChild("UpperTorso") or player:FindFirstChild("LowerTorso")
-        local head = player:FindFirstChild("Head")
-
-        if torso and head then
-            local fakeHitbox = torso:Clone()
-            fakeHitbox.Name = "HeadOverride"
-            fakeHitbox.Parent = torso.Parent
-            fakeHitbox.Size = head.Size
-            fakeHitbox.CFrame = head.CFrame
-            fakeHitbox.CanCollide = false
-            fakeHitbox.Transparency = 1
-
-            return fakeHitbox
-        end
-    end
-
-    local Hitbox = _G.Flags.HitboxExpander;
+    local HitboxInfo = _G.Flags.HitboxExpander;
 
     Players.PlayerAdded:Connect(function(player)
         player.CharacterAdded:Connect(function(character)
-            HitboxExpander(character, Hitbox.Size, Hitbox);
-
-            local fakeHeadHitbox = HitboxOverrider(character)
-        end)
-    end)
-
-    RunService.Heartbeat:Connect(function()
-        for _, player in pairs(Players:GetPlayers()) do
-            if player.Character and player.Character:FindFirstChild("PrimaryPart") then
-                HitboxExpander(player.Character, Hitbox.Size, Hitbox);
+            for _, part in pairs(character:GetChildren()) do
+                if part:IsA("BasePart") then
+                    OriginalSizes[part.Name] = part.Size;
+                end
             end
-        end
+
+            local function HitboxExpander(Model, Hitbox)
+                if Hitbox.Enabled then
+                    local Part = Model:FindFirstChild(Hitbox.Part);
+                    if Part then
+                        Part.Size = Vector3.new(Hitbox.Size, Hitbox.Size, Hitbox.Size);
+                        Part.Transparency = Hitbox.Transparency;
+                        Part.CanCollide = false;
+                        Part.Name = "Head";
+                    end
+                else
+                    local Part = Model:FindFirstChild("Head");
+                    if Part then
+                        Part.Size = OriginalSizes[Part.Name] or Vector3.new(2, 2, 1);
+                        Part.Transparency = 0;
+                        Part.CanCollide = true;
+                        Part.Name = "Torso";
+                    end
+                end
+            end
+
+            RunService.Heartbeat:Connect(function()
+                if character and character:FindFirstChild("Torso") then
+                    HitboxExpander(character, HitboxInfo);
+                end
+            end)
+        end)
     end)
 end
