@@ -88,15 +88,7 @@ local playerListCache = {}
 local snaplineTarget = nil
 getgenv().SilentEnabled = false
 
-Config = {
-    Manipulation = {
-        Enabled = false,
-        Angles = 30,
-        Radius = 6,
-        Direction = "Normal",
-        Vector = Vector3.new(0, 0, 0)
-    },
-}
+Config = {}
 
 local function GetPlayer()
     local closest, playerTable = nil, nil
@@ -116,6 +108,7 @@ local function GetPlayer()
     end
     return closest, playerTable
 end
+
 
 local function updateSnapline()
     local Target, playerData = GetPlayer()
