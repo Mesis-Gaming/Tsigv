@@ -1,55 +1,380 @@
-if not _G.Flags then
-    _G.Flags = {
-        HitboxExpander = {
-            Size = 12;
-            Enabled = true;
-            Transparency = 0.7;
-            Part = "Torso";
-        };
-    };
+
+local getupvalue = debug.getupvalue
+local setupvalue = debug.setupvalue
+local setconstant = debug.setconstant
+local setstack = debug.setstack
+local workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ogmodel = ReplicatedStorage.Shared.entities.Player.Model
+local TCP = game:GetService("Players").LocalPlayer:FindFirstChild("TCP")
+local Lighting = game:GetService("Lighting")
+local Camera = workspace.CurrentCamera
+local SetSprintBlocked, IsGrounded, SetSwaySpeed, createProjectile, GetEquippedItem, GetEntityFromPart
+local _FindFirstChild = game.FindFirstChild
+for _, v in ipairs(getgc(false)) do
+    if type(v) == "function" then
+        local info = debug.getinfo(v)
+        if info.name == "SetSprintBlocked" then
+            SetSprintBlocked = v
+        elseif info.name == "IsGrounded" then
+            IsGrounded = v
+        elseif info.name == "SetSwaySpeed" then
+            SetSwaySpeed = v
+        elseif info.name == "createProjectile" then
+            createProjectile = {}
+            table.insert(createProjectile, v) 
+        elseif info.name == "GetEquippedItem" then
+            GetEquippedItem = v
+        elseif info.name == "GetEntityFromPart" then
+            GetEntityFromPart = v
+        end
+    end
 end
 
-if not _G.Loaded then
-    _G.Loaded = true;
-    local ReplicatedStorage = game:GetService("ReplicatedStorage");
-    local RunService = game:GetService("RunService");
-    local Players = game:GetService("Players");
-    local OriginalSizes = {};
-    local HitboxInfo = _G.Flags.HitboxExpander;
+local oldvalues = {
+    Lighting = {
+        Ambient = Lighting.Ambient,
+        FogStart = Lighting.FogStart,
+        FogEnd = Lighting.FogEnd,
+    },
+}
 
-    Players.PlayerAdded:Connect(function(player)
-        player.CharacterAdded:Connect(function(character)
-            for _, part in pairs(character:GetChildren()) do
-                if part:IsA("BasePart") then
-                    OriginalSizes[part.Name] = part.Size;
-                end
-            end
+local HeadIndex;
+    HeadIndex = hookmetamethod(game, "__index", newcclosure(function(Self, Index)
+        if (tostring(Self) == "Head" and Index == "Size") then
+            return Vector3.new(1.672248125076294, 0.835624098777771, 0.835624098777771);
+        end;
 
-            local function HitboxExpander(Model, Hitbox)
-                if Hitbox.Enabled then
-                    local Part = Model:FindFirstChild(Hitbox.Part);
-                    if Part then
-                        Part.Size = Vector3.new(Hitbox.Size, Hitbox.Size, Hitbox.Size);
-                        Part.Transparency = Hitbox.Transparency;
-                        Part.CanCollide = false;
-                        Part.Name = "Head";
-                    end
-                else
-                    local Part = Model:FindFirstChild("Head");
-                    if Part then
-                        Part.Size = OriginalSizes[Part.Name] or Vector3.new(2, 2, 1);
-                        Part.Transparency = 0;
-                        Part.CanCollide = true;
-                        Part.Name = "Torso";
-                    end
-                end
-            end
+        return HeadIndex(Self, Index);
+    end));
 
-            RunService.Heartbeat:Connect(function()
-                if character and character:FindFirstChild("Torso") then
-                    HitboxExpander(character, HitboxInfo);
-                end
-            end)
-        end)
-    end)
+    local TorsoIndex;
+    TorsoIndex = hookmetamethod(game, "__index", newcclosure(function(Self, Index)
+        if (tostring(Self) == "Torso" and Index == "Size") then
+            return Vector3.new(0.6530659198760986, 2.220424175262451, 1.4367451667785645);
+        end;
+
+        return TorsoIndex(Self, Index);
+    end));
+
+local function hookService(service, properties)
+    local inex
+    inex = hookmetamethod(service, "__index", newcclosure(function(self, idx)
+        if not checkcaller() and properties[idx] then
+            return properties[idx]
+        end
+        return inex(self, idx)
+    end))
+
+    local Newinex
+    Newinex = hookmetamethod(service, "__newindex", newcclosure(function(self, idx, new)
+        if not checkcaller() and properties[idx] then
+            properties[idx] = new
+            return
+        end
+        return Newinex(self, idx, new)
+    end))
 end
+
+hookService(Lighting, oldvalues.Lighting)
+
+local redzlib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Pumpuma/Testing/refs/heads/main/vc.txt"))()
+local Window = redzlib:MakeWindow({
+    Title = " Priv10.Net | Free",
+    SubTitle = " ",
+    SaveFolder = "lmao.lua"
+})
+
+local Combat = Window:MakeTab({"Combat", " "})
+local Esp = Window:MakeTab({"ESP", " "})
+local World = Window:MakeTab({"World", " "})
+local Misc = Window:MakeTab({"Misc", " "})
+
+
+local Settings = {
+    Combat = {
+        Hitbox = {
+            Hitbox = false,
+            HitBoxPart = "None",
+            Override = false,
+            OverridePart = "None",
+            HitboxSize = 25,
+        },
+    
+        Movement = {
+            Jumpshoot = false,
+            Nosway = false,
+            Noslowdown = false,
+            Silentwalk = false,
+        },
+    },
+
+    Esp = {
+        
+    },
+
+    World = {
+        Visual = {
+            Fulbright = false,
+            Nograss = false,
+            Nofog = false
+        },
+    },
+}
+
+local Section1 = Combat:AddSection({"Hitbox"})
+
+local HitboxD1 = Combat:AddDropdown({
+    Name = "HitBox",
+    Description = "Choose the hitbox Targetpart",
+    Options = {"None", "Head", "Body"},
+    Default = "None",
+    Flag = "HitboxD1",
+    Callback = function(Value)
+        Settings.Combat.Hitbox.Hitbox = Value ~= "None"
+        Settings.Combat.Hitbox.HitBoxPart = Value
+    end
+})
+
+Combat:AddSlider({
+  Name = "Size",
+  Min = 1,
+  Max = 25,
+  Increase = 1,
+  Default = 25,
+  Callback = function(Value)
+    Settings.Combat.Hitbox.HitboxSize = Value
+  end
+})
+
+local HitboxD2 = Combat:AddDropdown({
+    Name = "Override",
+    Description = "Choose the override target",
+    Options = {"None", "Head", "Body", "Arms", "Legs"},
+    Default = "None",
+    Flag = "HitboxD2",
+    Callback = function(Value)
+        Settings.Combat.Hitbox.Override = Value ~= "None"
+        Settings.Combat.Hitbox.OverridePart = Value
+    end
+})
+
+local Section2 = Combat:AddSection({"Movement"})
+
+local CombatT1 = Combat:AddToggle({
+  Name = "Jumpshoot",
+  Description = " ",
+  Default = false
+})
+CombatT1:Callback(function(Value)
+  Settings.Combat.Movement.Jumpshoot = Value
+end)
+
+local CombatT2 = Combat:AddToggle({
+  Name = "Nosway",
+  Description = " ",
+  Default = false
+})
+CombatT2:Callback(function(Value)
+  Settings.Combat.Movement.Nosway = Value
+end)
+
+local CombatT3 = Combat:AddToggle({
+  Name = "Noslowdown",
+  Description = " ",
+  Default = false
+})
+CombatT3:Callback(function(Value)
+  Settings.Combat.Movement.Noslowdown = Value
+end)
+
+local CombatT4 = Combat:AddToggle({
+  Name = "Silentwalk",
+  Description = " ",
+  Default = false
+})
+CombatT4:Callback(function(Value)
+  Settings.Combat.Movement.Silentwalk = Value
+end)
+
+
+local Section3 = World:AddSection({"Visual"})
+
+local WorldT1 = World:AddToggle({
+  Name = "Fullbright",
+  Description = " ",
+  Default = false
+})
+WorldT1:Callback(function(Value)
+  Settings.World.Visual.Fullbright = Value
+end)
+
+local WorldT2 = World:AddToggle({
+  Name = "Nograss",
+  Description = " ",
+  Default = false
+})
+WorldT2:Callback(function(Value)
+    Settings.World.Visual.Nograss = Value
+end)
+
+local WorldT3 = World:AddToggle({
+  Name = "Nofog",
+  Description = " ",
+  Default = false
+})
+WorldT3:Callback(function(Value)
+    Settings.World.Visual.Nofog = Value
+end)
+
+
+
+function getplayers()
+    local players = {}
+    for _, v in pairs(getupvalue(GetEntityFromPart, 1)) do
+        if (v.type == "Player" or v.type == "Soldier" or v.type == "Officer") and v.model and not v.sleeping then
+            table.insert(players, v)
+        end
+    end
+    return players
+end
+
+
+
+
+local namecall
+namecall = hookmetamethod(game, "__namecall", newcclosure(function(self, ...)
+    local method = getnamecallmethod()
+    local args = {...}
+    
+    if checkcaller() then return namecall(self, ...) end
+   
+        if args[1] == 2 and method == "FireServer" and self == TCP then
+        if Settings.Combat.Movement.Silentwalk then
+            return namecall(self,2,true)
+        end
+    end
+    
+    if args[1] == 10 and args[2] == "Hit" and type(args[5]) == "number" and type(args[6]) == "string" and method == "FireServer" and self == TCP then
+        if Settings.Combat.Hitbox.Override then
+            local targetPart = Settings.Combat.Hitbox.OverridePart
+            
+            if targetPart == "Head" then
+                args[6] = "Head"
+            elseif targetPart == "Body" then
+                args[6] = "Torso"
+            elseif targetPart == "Arms" then
+                args[6] = math.random(1, 2) == 1 and "RightUpperArm" or "LeftUpperArm"
+            elseif targetPart == "Legs" then
+                args[6] = math.random(1, 2) == 1 and "RightUpperLeg" or "LeftUpperLeg"
+            end
+        end
+        
+        if Settings.Combat.Hitbox.Hitbox then
+        local entity = getupvalue(GetEntityFromPart, 1)[args[5]]
+        if entity and entity.model and _FindFirstChild(entity.model, "Head") then
+            local part = _FindFirstChild(entity.model, args[6])
+            local originalpart = _FindFirstChild(ogmodel, args[6])
+
+            if part and originalpart then
+                local primarypart = entity.model.PrimaryPart
+                local partoffset = part.Position - primarypart.Position
+                
+                args[7] = Vector3.new(
+                    math.random(-originalpart.Size.X, originalpart.Size.X),
+                    math.random(-originalpart.Size.Y, originalpart.Size.Y),
+                    math.random(-originalpart.Size.Z, originalpart.Size.Z)) + partoffset
+            end
+        end
+        end
+    end
+    return namecall(self, unpack(args))
+end))
+
+RunService:BindToRenderStep("Diddys lil cum step", Enum.RenderPriority.Character.Value + 1, function()
+    local players = getplayers()
+    for _, v in pairs(players) do
+        if v.model then
+            local Targetpart, idk
+            if Settings.Combat.Hitbox.Hitbox then
+                if Settings.Combat.Hitbox.HitBoxPart == "Head" then
+                    Targetpart = v.model:FindFirstChild("Head")
+                    idk = v.model:FindFirstChild("Torso")
+                elseif Settings.Combat.Hitbox.HitBoxPart == "Body" then
+                    Targetpart = v.model:FindFirstChild("Torso")
+                    idk = v.model:FindFirstChild("Head")
+                end
+
+                if Targetpart then
+                    Targetpart.Size = Vector3.new(Settings.Combat.Hitbox.HitboxSize, Settings.Combat.Hitbox.HitboxSize, Settings.Combat.Hitbox.HitboxSize)
+                    Targetpart.Transparency = 0.5
+                    Targetpart.CanCollide = false
+                end
+
+                if idk then
+                    local ogPart = ogmodel:FindFirstChild(idk.Name)
+                    if ogPart then
+                        idk.Size = ogPart.Size
+                        idk.Transparency = 0
+                        idk.CanCollide = true
+                    end
+                end
+            else
+                
+                local torso = v.model:FindFirstChild("Torso")
+                local head = v.model:FindFirstChild("Head")
+                if torso then
+                    torso.Size = ogmodel:FindFirstChild("Torso").Size
+                    torso.Transparency = 0
+                    torso.CanCollide = true
+                end
+                if head then
+                    head.Size = ogmodel:FindFirstChild("Head").Size
+                    head.Transparency = 0
+                    head.CanCollide = true
+                end
+            end
+        end
+    end
+    
+    if Settings.World.Visual.Fullbright then
+        Lighting.Ambient = Color3.new(1, 1, 1)
+    else
+        Lighting.Ambient = oldvalues.Lighting.Ambient
+    end
+    
+    if Settings.World.Visual.Nofog then
+        Lighting.FogEnd = math.huge
+        Lighting.FogStart = math.huge 
+    else
+       Lighting.FogEnd = 900
+       Lighting.FogStart = 0
+    end
+
+    if Settings.World.Visual.Nograss then
+        sethiddenproperty(workspace.Terrain, "Decoration", false)
+    else
+        sethiddenproperty(workspace.Terrain, "Decoration", true)
+    end
+    
+    if SetSprintBlocked and  Settings.Combat.Movement.Noslowdown then 
+      setconstant(SetSprintBlocked, 1, false) 
+    end
+    
+    if IsGrounded and Settings.Combat.Movement.Jumpshoot then
+        setupvalue(IsGrounded, 1, true)
+        setupvalue(IsGrounded, 4, true)
+    end
+    
+    if SetSwaySpeed and Settings.Combat.Movement.Nosway then
+        setupvalue(SetSwaySpeed, 1, 0)
+        setupvalue(SetSwaySpeed, 2, true)
+    end
+    
+end)
+
+Window:AddMinimizeButton({
+    Button = { Image = redzlib:GetIcon(" "), BackgroundTransparency = .5},
+    Corner = { CornerRadius = UDim.new(1, 0) }
+})
