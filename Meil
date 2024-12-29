@@ -1513,7 +1513,7 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
-local MAX_SPEED = 1000
+local MAX_SPEED = 35
 local MIN_SPEED = 1
 local speed = 115
 local isSpeedToggled = false
@@ -1523,7 +1523,7 @@ local ClosestATV = nil
 local Enabled = false
 local atvbypass = true
 
-local DesyncRotationSpeed = 5 -- Adjust this value for how fast you want to rotate the ATV
+local DesyncRotationSpeed = 5
 
 local function clampSpeed(value, min, max)
     return math.max(min, math.min(max, value))
@@ -1609,7 +1609,6 @@ local function FlyHack()
                 travel -= cameraCFrame.UpVector
             end
 
-            -- Gradually increase velocity for smoother experience
             if travel.Magnitude > 0 then
                 plastics.Anchored = false
                 plastics.Velocity = travel.Unit * speed
@@ -1626,6 +1625,14 @@ local function FlyHack()
     end)
 end
 
+local function noclipAllParts()
+    for _, part in ipairs(ClosestATV:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.CanCollide = false
+        end
+    end
+end
+
 UserInputService.InputBegan:Connect(function(input)
     if input.KeyCode == Enum.KeyCode.V then
         adjustSpeed(5)
@@ -1637,11 +1644,11 @@ UserInputService.InputBegan:Connect(function(input)
         Enabled = not Enabled
     elseif input.KeyCode == Enum.KeyCode.F then
         toggleATVCollision()
-    elseif input.KeyCode == Enum.KeyCode.A and UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then
+    elseif input.KeyCode == Enum.KeyCode.T then
         if ClosestATV then
             ClosestATV:SetPrimaryPartCFrame(ClosestATV.PrimaryPart.CFrame * CFrame.Angles(0, math.rad(-DesyncRotationSpeed), 0))
         end
-    elseif input.KeyCode == Enum.KeyCode.D and UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then
+    elseif input.KeyCode == Enum.KeyCode.G then
         if ClosestATV then
             ClosestATV:SetPrimaryPartCFrame(ClosestATV.PrimaryPart.CFrame * CFrame.Angles(0, math.rad(DesyncRotationSpeed), 0))
         end
