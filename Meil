@@ -1523,6 +1523,8 @@ local ClosestATV = nil
 local Enabled = false
 local atvbypass = true
 
+local DesyncRotationSpeed = 5 -- Adjust this value for how fast you want to rotate the ATV
+
 local function clampSpeed(value, min, max)
     return math.max(min, math.min(max, value))
 end
@@ -1637,11 +1639,11 @@ UserInputService.InputBegan:Connect(function(input)
         toggleATVCollision()
     elseif input.KeyCode == Enum.KeyCode.A and UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then
         if ClosestATV then
-            ClosestATV:SetPrimaryPartCFrame(ClosestATV.PrimaryPart.CFrame * CFrame.Angles(0, math.rad(-5), 0))
+            ClosestATV:SetPrimaryPartCFrame(ClosestATV.PrimaryPart.CFrame * CFrame.Angles(0, math.rad(-DesyncRotationSpeed), 0))
         end
     elseif input.KeyCode == Enum.KeyCode.D and UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then
         if ClosestATV then
-            ClosestATV:SetPrimaryPartCFrame(ClosestATV.PrimaryPart.CFrame * CFrame.Angles(0, math.rad(5), 0))
+            ClosestATV:SetPrimaryPartCFrame(ClosestATV.PrimaryPart.CFrame * CFrame.Angles(0, math.rad(DesyncRotationSpeed), 0))
         end
     end
 end)
@@ -1662,9 +1664,32 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
-AtvFly:addSlider({text = "Atv Speed", min = 1, max = 300, suffix = "%", float = 1, default = 25, flag = "speed",callback = function(Value)
-    speed = Value
-end})
+AtvFly:addSlider({
+    text = "Atv Speed",
+    min = 1,
+    max = 300,
+    suffix = "%",
+    float = 1,
+    default = 25,
+    flag = "speed",
+    callback = function(Value)
+        speed = Value
+    end
+})
+
+AtvFly:addSlider({
+    text = "Desync Rotation Speed",
+    min = 1,
+    max = 50,
+    suffix = "°/s",
+    float = 1,
+    default = DesyncRotationSpeed,
+    flag = "rotationSpeed",
+    callback = function(Value)
+        DesyncRotationSpeed = Value
+    end
+})
+
 
 
     for i,v in getgc(true) do
