@@ -1524,6 +1524,7 @@ local Enabled = false
 local atvbypass = true
 
 local DesyncRotationSpeed = 5
+local flipToggle = true  -- Keeps track of Flip/Flip2 toggle state
 
 local function clampSpeed(value, min, max)
     return math.max(min, math.min(max, value))
@@ -1568,6 +1569,24 @@ local function toggleATVCollision()
             part.CanCollide = collisionToggle
         end
     end
+end
+
+local function toggleFlip()
+    if ClosestATV then
+        local frame = ClosestATV:FindFirstChild("Frame")
+        if frame then
+            local flip = frame:FindFirstChild("Flip")
+            local flip2 = frame:FindFirstChild("Flip2")
+
+            if flip then flip.Enabled = flipToggle end
+            if flip2 then flip2.Enabled = flipToggle end
+
+            -- Notify the user
+            print("Flip/Flip2 is now " .. (flipToggle and "enabled" or "disabled"))
+        end
+    end
+
+    flipToggle = not flipToggle
 end
 
 local function FlyHack()
@@ -1652,6 +1671,8 @@ UserInputService.InputBegan:Connect(function(input)
         if ClosestATV then
             ClosestATV:SetPrimaryPartCFrame(ClosestATV.PrimaryPart.CFrame * CFrame.Angles(0, math.rad(DesyncRotationSpeed), 0))
         end
+    elseif input.KeyCode == Enum.KeyCode.H then  -- Toggle Flip/Flip2
+        toggleFlip()
     end
 end)
 
@@ -1696,6 +1717,7 @@ AtvFly:addSlider({
         DesyncRotationSpeed = Value
     end
 })
+
 
 
 
