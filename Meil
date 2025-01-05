@@ -1509,217 +1509,161 @@ do
     end})
     local AtvFly = Tabs.misc:createGroup('left', 'Atv Fly | Skibidi')
 
-local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
-local Workspace = game:GetService("Workspace")
+    local UserInputService = game:GetService("UserInputService")
+    local RunService = game:GetService("RunService")
+    local Workspace = game:GetService("Workspace")
 
-local MAX_SPEED = 35
-local MIN_SPEED = 1
-local speed = 115
-local isSpeedToggled = false
-local previousSpeed = speed
-local collisionToggle = false
-local ClosestATV = nil
-local Enabled = false
-local atvbypass = true
+    local MAX_SPEED = 1000
+    local MIN_SPEED = 0
+    local speed = 115
+    local isSpeedToggled = false
+    local previousSpeed = speed
+    local collisionToggle = false
+    local ClosestATV = nil
+    local Enabled = false
+    local atvbypass = true
 
-local DesyncRotationSpeed = 5
-local flipToggle = true  -- Keeps track of Flip/Flip2 toggle state
-
-local function clampSpeed(value, min, max)
-    return math.max(min, math.min(max, value))
-end
-
-local function adjustSpeed(amount)
-    speed = clampSpeed(speed + amount, MIN_SPEED, MAX_SPEED)
-end
-
-local function toggleSpeed()
-    if isSpeedToggled then
-        speed = previousSpeed
-    else
-        previousSpeed = speed
-        speed = 28
-    end
-    isSpeedToggled = not isSpeedToggled
-end
-
-local function GetClosestATV()
-    local closestATV, closestDistance = nil, math.huge
-
-    for _, v in ipairs(Workspace:GetChildren()) do
-        if v:FindFirstChild("Seat") and v:FindFirstChild("Plastics") then
-            local distance = (v.Plastics.Position - Workspace.Ignore.LocalCharacter.Middle.Position).Magnitude
-            if distance < closestDistance then
-                closestATV = v
-                closestDistance = distance
-            end
-        end
+    local function clampSpeed(value, min, max)
+        return math.max(min, math.min(max, value))
     end
 
-    return closestATV
-end
-
-local function toggleATVCollision()
-    if not ClosestATV then return end
-
-    collisionToggle = not collisionToggle
-    for _, part in ipairs(ClosestATV:GetDescendants()) do
-        if part:IsA("BasePart") then
-            part.CanCollide = collisionToggle
-        end
-    end
-end
-
-local function toggleFlip()
-    if ClosestATV then
-        local frame = ClosestATV:FindFirstChild("Frame")
-        if frame then
-            local flip = frame:FindFirstChild("Flip")
-            local flip2 = frame:FindFirstChild("Flip2")
-
-            if flip then flip.Enabled = flipToggle end
-            if flip2 then flip2.Enabled = flipToggle end
-
-            -- Notify the user
-            print("Flip/Flip2 is now " .. (flipToggle and "enabled" or "disabled"))
-        end
+    local function adjustSpeed(amount)
+        speed = clampSpeed(speed + amount, MIN_SPEED, MAX_SPEED)
     end
 
-    flipToggle = not flipToggle
-end
-
-local function FlyHack()
-    RunService.RenderStepped:Connect(function()
-        ClosestATV = GetClosestATV()
-        if Enabled and ClosestATV then
-            local plastics = ClosestATV.Plastics
-            plastics.Velocity = Vector3.zero
-
-            local flip2 = ClosestATV.Frame:FindFirstChild("Flip2")
-            if not flip2 then
-                local newFlip = ClosestATV.Frame.Flip:Clone()
-                newFlip.Name = "Flip2"
-                newFlip.Enabled = true
-                newFlip.Parent = ClosestATV.Frame
-            else
-                flip2.Enabled = true
-            end
-
-            local travel = Vector3.zero
-            local cameraCFrame = Workspace.CurrentCamera.CFrame
-
-            if UserInputService:IsKeyDown(Enum.KeyCode.W) then
-                travel += cameraCFrame.LookVector
-            end
-            if UserInputService:IsKeyDown(Enum.KeyCode.S) then
-                travel -= cameraCFrame.LookVector
-            end
-            if UserInputService:IsKeyDown(Enum.KeyCode.D) then
-                travel += cameraCFrame.RightVector
-            end
-            if UserInputService:IsKeyDown(Enum.KeyCode.A) then
-                travel -= cameraCFrame.RightVector
-            end
-            if UserInputService:IsKeyDown(Enum.KeyCode.X) then
-                travel += cameraCFrame.UpVector
-            end
-            if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then
-                travel -= cameraCFrame.UpVector
-            end
-
-            if travel.Magnitude > 0 then
-                plastics.Anchored = false
-                plastics.Velocity = travel.Unit * speed
-            else
-                plastics.Velocity = Vector3.zero
-                plastics.Anchored = false
-            end
+    local function toggleSpeed()
+        if isSpeedToggled then
+            speed = previousSpeed
         else
-            local flip2 = ClosestATV and ClosestATV.Frame:FindFirstChild("Flip2")
-            if flip2 then
-                flip2.Enabled = false
+            previousSpeed = speed
+            speed = 28
+        end
+        isSpeedToggled = not isSpeedToggled
+    end
+
+    local function GetClosestATV()
+        local closestATV, closestDistance = nil, math.huge
+
+        for _, v in ipairs(Workspace:GetChildren()) do
+            if v:FindFirstChild("Seat") and v:FindFirstChild("Plastics") then
+                local distance = (v.Plastics.Position - Workspace.Ignore.LocalCharacter.Middle.Position).Magnitude
+                if distance < closestDistance then
+                    closestATV = v
+                    closestDistance = distance
+                end
+            end
+        end
+
+        return closestATV
+    end
+
+    local function toggleATVCollision()
+        if not ClosestATV then return end
+
+        collisionToggle = not collisionToggle
+        for _, part in ipairs(ClosestATV:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = collisionToggle
+            end
+        end
+    end
+
+    local function FlyHack()
+        RunService.RenderStepped:Connect(function()
+            ClosestATV = GetClosestATV()
+            if Enabled and ClosestATV then
+                local plastics = ClosestATV.Plastics
+                plastics.Velocity = Vector3.zero
+
+                local flip2 = ClosestATV.Frame:FindFirstChild("Flip2")
+                if not flip2 then
+                    local newFlip = ClosestATV.Frame.Flip:Clone()
+                    newFlip.Name = "Flip2"
+                    newFlip.Enabled = true
+                    newFlip.Parent = ClosestATV.Frame
+                else
+                    flip2.Enabled = true
+                end
+
+                local travel = Vector3.zero
+                local cameraCFrame = Workspace.CurrentCamera.CFrame
+
+                if UserInputService:IsKeyDown(Enum.KeyCode.W) then
+                    travel += cameraCFrame.LookVector
+                end
+                if UserInputService:IsKeyDown(Enum.KeyCode.S) then
+                    travel -= cameraCFrame.LookVector
+                end
+                if UserInputService:IsKeyDown(Enum.KeyCode.D) then
+                    travel += cameraCFrame.RightVector
+                end
+                if UserInputService:IsKeyDown(Enum.KeyCode.A) then
+                    travel -= cameraCFrame.RightVector
+                end
+                if UserInputService:IsKeyDown(Enum.KeyCode.X) then
+                    travel += cameraCFrame.UpVector
+                end
+                if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then
+                    travel -= cameraCFrame.UpVector
+                end
+
+                if travel.Magnitude > 0 then
+                    plastics.Anchored = false
+                    plastics.Velocity = travel.Unit * speed
+                else
+                    plastics.Velocity = Vector3.zero
+                    plastics.Anchored = false
+                end
+            else
+                local flip2 = ClosestATV and ClosestATV.Frame:FindFirstChild("Flip2")
+                if flip2 then
+                    flip2.Enabled = false
+                end
+            end
+        end)
+    end
+
+    UserInputService.InputBegan:Connect(function(input)
+        if input.KeyCode == Enum.KeyCode.V then
+            adjustSpeed(5)
+        elseif input.KeyCode == Enum.KeyCode.N then
+            adjustSpeed(-5)
+        elseif input.KeyCode == Enum.KeyCode.Q then
+            toggleSpeed()
+        elseif input.KeyCode == Enum.KeyCode.Z then
+            Enabled = not Enabled
+        elseif input.KeyCode == Enum.KeyCode.F then
+            toggleATVCollision()
+        elseif input.KeyCode == Enum.KeyCode.A and UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then
+            if ClosestATV then
+                ClosestATV:SetPrimaryPartCFrame(ClosestATV.PrimaryPart.CFrame * CFrame.Angles(0, math.rad(-5), 0))
+            end
+        elseif input.KeyCode == Enum.KeyCode.D and UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then
+            if ClosestATV then
+                ClosestATV:SetPrimaryPartCFrame(ClosestATV.PrimaryPart.CFrame * CFrame.Angles(0, math.rad(5), 0))
             end
         end
     end)
-end
 
-local function noclipAllParts()
-    for _, part in ipairs(ClosestATV:GetDescendants()) do
-        if part:IsA("BasePart") then
-            part.CanCollide = false
-        end
-    end
-end
+    FlyHack()
 
-UserInputService.InputBegan:Connect(function(input)
-    if input.KeyCode == Enum.KeyCode.V then
-        adjustSpeed(5)
-    elseif input.KeyCode == Enum.KeyCode.N then
-        adjustSpeed(-5)
-    elseif input.KeyCode == Enum.KeyCode.Q then
-        toggleSpeed()
-    elseif input.KeyCode == Enum.KeyCode.Z then
-        Enabled = not Enabled
-    elseif input.KeyCode == Enum.KeyCode.F then
-        toggleATVCollision()
-    elseif input.KeyCode == Enum.KeyCode.T then
-        if ClosestATV then
-            ClosestATV:SetPrimaryPartCFrame(ClosestATV.PrimaryPart.CFrame * CFrame.Angles(0, math.rad(-DesyncRotationSpeed), 0))
-        end
-    elseif input.KeyCode == Enum.KeyCode.G then
-        if ClosestATV then
-            ClosestATV:SetPrimaryPartCFrame(ClosestATV.PrimaryPart.CFrame * CFrame.Angles(0, math.rad(DesyncRotationSpeed), 0))
-        end
-    elseif input.KeyCode == Enum.KeyCode.H then  -- Toggle Flip/Flip2
-        toggleFlip()
-    end
-end)
-
-FlyHack()
-
-RunService.RenderStepped:Connect(function()
-    for _, v in ipairs(Workspace:GetChildren()) do
-        local frame = v:FindFirstChild("Frame")
-        if frame then
-            local flip = frame:FindFirstChild("Flip")
-            if flip and atvbypass then
-                flip.Enabled = true
-                flip.RigidityEnabled = true
-                flip.Responsiveness = math.huge
+    RunService.RenderStepped:Connect(function()
+        for _, v in ipairs(Workspace:GetChildren()) do
+            local frame = v:FindFirstChild("Frame")
+            if frame then
+                local flip = frame:FindFirstChild("Flip")
+                if flip and atvbypass then
+                    flip.Enabled = true
+                    flip.RigidityEnabled = true
+                    flip.Responsiveness = math.huge
+                end
             end
         end
-    end
-end)
+    end)
 
-AtvFly:addSlider({
-    text = "Atv Speed",
-    min = 1,
-    max = 300,
-    suffix = "%",
-    float = 1,
-    default = 25,
-    flag = "speed",
-    callback = function(Value)
+    AtvFly:addSlider({text = "Atv Speed", min = 1, max = 300, suffix = "%", float = 1, default = 25, flag = "speed",callback = function(Value)
         speed = Value
-    end
-})
-
-AtvFly:addSlider({
-    text = "Desync Rotation Speed",
-    min = 1,
-    max = 50,
-    suffix = "°/s",
-    float = 1,
-    default = DesyncRotationSpeed,
-    flag = "rotationSpeed",
-    callback = function(Value)
-        DesyncRotationSpeed = Value
-    end
-})
-
-
-
+    end})
 
     for i,v in getgc(true) do
     if typeof(v) == "function" and debug.getinfo(v).name == "fire" then
