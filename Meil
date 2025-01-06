@@ -14,7 +14,7 @@ local atvbypass = true
 
 local DesyncRotationSpeed = 5
 local flipToggle = true
-local noatvrestriction = true -- No look restriction always enabled
+local noatvrestriction = true -- No look restriction always enabled (remove if no longer needed)
 
 local function clampSpeed(value, min, max)
     return math.max(min, math.min(max, value))
@@ -132,17 +132,6 @@ local function FlyHack()
         end
     end)
 end
-
--- Automatically disable look restrictions
-task.spawn(function()
-    local thing = trident.gc.camera.SetMaxRelativeLookExtentsY
-    while true do
-        if noatvrestriction then
-            thing(10000)
-        end
-        task.wait()
-    end
-end)
 
 UserInputService.InputBegan:Connect(function(input)
     if input.KeyCode == Enum.KeyCode.V then
